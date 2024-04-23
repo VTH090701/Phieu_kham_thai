@@ -1,0 +1,208 @@
+﻿@using Data
+@using Services
+@inject IApiService ApiService
+@inject NavigationManager navigationmanager
+@inject NotificationService notification
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@using Newtonsoft.Json;
+@using System.Text;
+@inject HttpClient _httpClient;
+@using System.Net
+@inject NotificationService NotificationService
+
+
+
+@page "/listbill/{encounterinfor:int}"
+
+@if (!isedit)
+{
+    @if (ListVist != null)
+    {
+        <h3>Danh sách phiếu khám thai</h3>
+        <RadzenDataGrid Data="@ListVist?.Value" TItem="ListVisit" AllowVirtualization="true"
+                        AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" LogicalFilterOperator="LogicalFilterOperator.Or"
+                        AllowSorting="true">
+            <Columns>
+
+                <RadzenDataGridColumn TItem="ListVisit" Property="Id" Title="Id" />
+                <RadzenDataGridColumn TItem="ListVisit" Property="Doctor" Title="Bác sĩ" />
+                <RadzenDataGridColumn TItem="ListVisit" Property="Status" Title="Tình trạng" />
+                <RadzenDataGridColumn TItem="ListVisit" Property="Created" Title="Ngày tạo" />
+                <RadzenDataGridColumn TItem="ListVisit" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+
+                    <Template Context="ListVisit">
+                        @if (ListVisit.Status == "publish")
+                        {
+
+                        }
+                        else
+                        {
+                            <RadzenButton Icon="description" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Primary" Click="@((args) => SavePublish(ListVisit.Id) )"></RadzenButton>
+                            <span>|</span>
+                            <RadzenButton Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => Editbill(ListVisit.Id) )"></RadzenButton>
+                        }
+
+                    </Template>
+
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+
+    }
+    else
+    {
+        <RadzenRow>
+
+            <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+            </RadzenColumn>
+
+            <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+
+            </RadzenColumn>
+        </RadzenRow>
+
+    }
+
+}
+else
+{
+    @if(idbill != null && idbill != "")
+    {
+        //@idbill
+        <EditBill id_bill1="@idbill" encounterinfor="encounterinfor" division="division" subject="subject" />
+    }
+    else
+    {
+        <span>Không gởi được id</span>
+
+    }
+}
+
+
+
+@code {
+    [Parameter] public int encounterinfor { set; get; }
+    [Parameter] public int division { set; get; }
+    [Parameter] public int? subject { set; get; }
+
+    private ResponseApi<List<DataDoctor>> doctors;
+    private string ip;
+    private ResponLogin<object> us;
+    protected override async Task OnInitializedAsync()
+    {
+        await Getsession();
+        await LoadListVisit();
+        await GetIP();
+        await LoadDoctor();
+    }
+
+    private bool isedit = false;
+    private string idbill = "";
+
+    private async Task Editbill(string id)
+    {
+        idbill = id;
+        isedit = true;
+    }
+
+
+    private async Task Getsession()
+    {
+        us = await sessionStorage.GetItemAsync<ResponLogin<object>>("us");
+    }
+    private async Task GetIP()
+    {
+        ip = GetLocalIPAddress();
+    }
+
+    private async Task LoadDoctor()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://14.241.182.251:59325/api/system/employee/eyJ0eXBlIjogIm51cnNlIiwgImxvY2F0aW9uIjogImFsbCJ9");
+        request.Headers.Add("token", us.Token);
+        var response = await _httpClient.SendAsync(request);
+        var result = await response.Content.ReadFromJsonAsync<ResponseApi<List<DataDoctor>>>();
+        doctors = result;
+    }
+
+    private async Task ReloadList()
+    {
+        await LoadListVisit(); // Gọi phương thức tải lại danh sách
+        StateHasChanged(); // Cập nhật giao diện người dùng
+    }
+
+
+    private async Task SavePublish(string id )
+    {
+        //Hẹm tái khám
+        var request2 = new
+        {
+            data = new
+            {
+                encounter = encounterinfor,
+                id = id,
+                type = "publish"
+            },
+            token = us.Token,
+            ip = ip,
+            code = new Guid().ToString()
+        };
+        var jsonContent2 = JsonConvert.SerializeObject(request2);
+        var content2 = new StringContent(jsonContent2, System.Text.Encoding.UTF8, "application/json");
+        var response2 = await _httpClient.PutAsync("http://14.241.182.251:59325/api/medical/visit/status", content2);
+        response2.EnsureSuccessStatusCode();
+        responseSaveComeBack result2 = await response2.Content.ReadFromJsonAsync<responseSaveComeBack>();
+        if (result2.code == "200")
+        {
+
+            await ReloadList(); // Gọi phương thức tải lại danh sách sau khi lưu thành công
+            NotificationService.Notify(NotificationSeverity.Success, result2.message);
+
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Thất bại");
+        }
+    }
+    static string GetLocalIPAddress()
+    {
+        IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+        foreach (IPAddress ipAddress in localIPs)
+        {
+            if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            {
+                return ipAddress.ToString();
+            }
+        }
+        return "Không tìm thấy địa chỉ IP IPv4.";
+    }
+
+
+    private responseListVisit ListVist;
+    private async Task LoadListVisit()
+    {
+        if (encounterinfor != null)
+        {
+            if (encounterinfor != null)
+            {
+                var para = new
+                {
+                    encounter = encounterinfor,
+                    type = "OET_026"
+
+                };
+                var jsonContent = JsonConvert.SerializeObject(para);
+                byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonContent);
+                string base64EncodedString = Convert.ToBase64String(jsonBytes);
+
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"http://14.241.182.251:59325/api/medical/visit/{base64EncodedString}");
+                request.Headers.Add("token", us.Token);
+                var response = await _httpClient.SendAsync(request);
+                var result = await response.Content.ReadFromJsonAsync<responseListVisit>();
+                ListVist = result;
+            }
+        }
+    }
+}

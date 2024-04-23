@@ -1,0 +1,1479 @@
+﻿@using Data
+@using Services
+@inject IApiService ApiService
+@inject NavigationManager navigationmanager
+@inject NotificationService notification
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@using Newtonsoft.Json;
+@using System.Text;
+@inject HttpClient _httpClient;
+@using System.Net
+@inject NotificationService NotificationService
+
+@* <p>User ID: @encounterinfor</p> *@
+
+
+@if (eninfor != null)
+{
+    @if(!is_list){
+        <RadzenRow>
+            <h3>Tạo phiếu khám thai</h3>
+            <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                <RadzenTabs @bind-SelectedIndex=@selectedIndex>
+                    <Tabs>
+                        <RadzenTabsItem Text="1. Hỏi Bệnh">
+                            <RadzenText>1. Thông tin lần trước khám</RadzenText>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="6" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Ngày khám" Variant="@variant">
+                                            <RadzenDatePicker @bind-Value="@OBS_0337_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        @if (OBS_0338 != null)
+                                        {
+                                            <RadzenFormField Text="Chẩn đoán" Variant="@variant">
+                                                <RadzenDropDownDataGrid @bind-Value="@OBS_0338_value" Data=@OBS_0338?.Value TextProperty="Display" ValueProperty="Code" Placeholder="Chọn chẩn đoán" />
+                                            </RadzenFormField>
+                                        }
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xử trí" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0339_value" Rows="5" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenText class="rz-mt-2">2. Khám bệnh</RadzenText>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Lý do vào viện" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0001_value" Rows="5" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Lần mang thai thứ" Variant="@variant">
+                                            <RadzenNumeric @bind-Value="@OBS_0135_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Số lần khám thai" Variant="@variant">
+                                            <RadzenNumeric @bind-Value="@OBS_0399_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Ngày đầu kinh cuối" Variant="@variant">
+                                            <RadzenDatePicker @bind-Value="@OBS_0340_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tuổi thai" Variant="@variant">
+                                            <RadzenNumeric @bind-Value="@OBS_0341_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Ngày sinh dự kiến" Variant="@variant">
+                                            <RadzenDatePicker @bind-Value="@OBS_0342_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Diễn biến lâm sàng" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0096_value" Rows="5" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Toàn thân" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0326_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường" Value="@("OBS_0326_01")" />
+                                                    <RadzenRadioButtonListItem Text="Bất bình thường" Value="@("OBS_0326_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Số mũi tiên phòng uống ván đã tiêm" Variant="@variant">
+                                            <RadzenNumeric @bind-Value="@OBS_0343_value" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="2. Tiền Sử Bệnh (BT)">
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Dị ứng" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0344_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0344_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0344_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tiền sử bệnh" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0003_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0003_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0003_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh huyết áp" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0346_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0346_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0346_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh tuyến giáp" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0347_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0347_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0347_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh tim" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0348_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0348_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0348_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh thận" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0349_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0349_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0349_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh hô hấp" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0350_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0350_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0350_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Thuốc đang dùng" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0353_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0351_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0351_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tiền sử phẫu thuật" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0354_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0354_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0354_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Đái tháo đường " Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0351_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0351_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0351_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Sa tạng chậu " Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0362_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0362_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0362_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Chu kỳ kinh" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0356_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Đều" Value="@("OBS_0356_01")" />
+                                                    <RadzenRadioButtonListItem Text="Không đều" Value="@("OBS_0356_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Phẫu thuật sản khoa" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0357_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0357_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0357_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khối u buồn trứng" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0358_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0358_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0358_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Dị dạng sinh dục" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0360_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0360_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0360_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khối u tử cung" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0359_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0359_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0359_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tầng sinh môn" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0361_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0361_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0361_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tiền sử sản khỏa (para)" Variant="@variant">
+                                            <RadzenNumeric @bind-Value=@OBS_0398_01_value />
+                                            <RadzenNumeric @bind-Value=@OBS_0398_02_value />
+                                            <RadzenNumeric @bind-Value=@OBS_0398_03_value />
+                                            <RadzenNumeric @bind-Value=@OBS_0398_04_value />
+
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khác (tiền sử)" Variant="@variant">
+                                            <RadzenTextArea @bind-Value=@OBS_0352_value Rows="3" class="form-control"></RadzenTextArea>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh phụ khoa đã mắc và điều trị" Variant="@variant">
+                                            <RadzenTextArea @bind-Value=@OBS_0363_value Rows="3" class="form-control"></RadzenTextArea>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Thời gian, nơi kết thúc thai nghén</th>
+                                                <th>Tuổi thai (sảy, sinh non,đủ tháng, già tháng)</th>
+                                                <th>Diễn biến khi có thai</th>
+                                                <th>Cách thức sinh</th>
+                                                <th>Trẻ sơ sinh(cân nặng, bệnh tật)</th>
+                                                <th>Hậu sản </th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in List_OBS_0345)
+                                            {
+                                                <tr>
+                                                    <td>@item.OBS_0345_01</td>
+                                                    <td>@item.OBS_0345_02</td>
+                                                    <td>@item.OBS_0345_03</td>
+                                                    <td>@item.OBS_0345_04</td>
+                                                    <td>@item.OBS_0345_05</td>
+                                                    <td>@item.OBS_0345_06</td>
+                                                    <td>
+                                                        <RadzenButton Icon="delete" Size="ButtonSize.Small" class="rz-background-color-danger" Click="@(() => RemoveItem(item))" />
+
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><input @bind="@newItem.OBS_0345_01" type="text" class="form-control" /></td>
+                                                <td><input @bind="@newItem.OBS_0345_02" type="text" class="form-control" /></td>
+                                                <td><input @bind="@newItem.OBS_0345_03" type="text" class="form-control" /></td>
+                                                <td><input @bind="@newItem.OBS_0345_04" type="text" class="form-control" /></td>
+                                                <td><input @bind="@newItem.OBS_0345_05" type="text" class="form-control" /></td>
+                                                <td><input @bind="@newItem.OBS_0345_06" type="text" class="form-control" @onkeyup="@((e) => OnKeyPress(e))" /></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="3. Tiền sử (GĐ)">
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Đa thai" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0364_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value="@("OBS_0347_01")" />
+                                                    <RadzenRadioButtonListItem Text="Có" Value="@("OBS_0347_02")" />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Đái tháo đường" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0367_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0367_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0367_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Dị dạng" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0365_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0365_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0365_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+
+
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tăng huyết áp" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0368_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0368_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0368_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bệnh di truyền" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0366_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0366_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0366_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khác (ghi rõ)" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0369_value" Rows="4" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="4. Khám bệnh">
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tinh thần" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0370_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Tỉnh táo" Value=@("OBS_0370_01") />
+                                                    <RadzenRadioButtonListItem Text="Hôn mê" Value=@("OBS_0370_02") />
+                                                    <RadzenRadioButtonListItem Text="Khác" Value=@("OBS_0370_03") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Phù" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0371_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0371_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0371_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Protein niệu" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0372_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0372_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0372_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="g/l Sẹo mổ cũ" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0373_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0371_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0371_02") />
+                                                    <RadzenRadioButtonListItem Text="Đau vết mổ" Value=@("OBS_0371_03") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khung chậu" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0374_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường" Value=@("OBS_0374_01") />
+                                                    <RadzenRadioButtonListItem Text="Bất thường" Value=@("OBS_0374_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Chiều cao tử cung" Variant="@variant">
+                                            <RadzenTextBox @bind-Value=@OBS_0375_value />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Vòng bụng" Variant="@variant">
+                                            <RadzenTextBox @bind-Value=@OBS_0376_value />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Ngôi thai" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0377_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường" Value=@("OBS_0377_01") />
+                                                    <RadzenRadioButtonListItem Text="Bất thường" Value=@("OBS_0377_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Cơn co tử cung" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0378_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0378_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0378_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tim thai" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0380_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0380_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0380_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Cổ tử cung" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0381_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Đóng" Value=@("OBS_0381_01") />
+                                                    <RadzenRadioButtonListItem Text="Xóa" Value=@("OBS_0381_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="7" SizeMD="7" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Đầu ối" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0382_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Phồng" Value=@("OBS_0382_01") />
+                                                    <RadzenRadioButtonListItem Text="Dẹt " Value=@("OBS_0382_02") />
+                                                    <RadzenRadioButtonListItem Text="Quả lê" Value=@("OBS_0382_03") />
+                                                    <RadzenRadioButtonListItem Text="Rỉ" Value=@("OBS_0382_04") />
+                                                    <RadzenRadioButtonListItem Text="Vỡ" Value=@("OBS_0382_05") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="5" SizeMD="5" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Nước ối" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0383_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Trong" Value=@("OBS_0383_01") />
+                                                    <RadzenRadioButtonListItem Text="Xanh bẩn " Value=@("OBS_0383_02") />
+                                                    <RadzenRadioButtonListItem Text="Lẫn máu" Value=@("OBS_0383_03") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="5. Các XN/ CLS">
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm máu ngoại vị" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0384_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không" Value=@("OBS_0384_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0384_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm đông máu" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0385_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường " Value=@("OBS_0385_01") />
+                                                    <RadzenRadioButtonListItem Text="Bất thường" Value=@("OBS_0385_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm sinh hóa máu" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0386_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường" Value=@("OBS_0386_01") />
+                                                    <RadzenRadioButtonListItem Text="Bất thường" Value=@("OBS_0386_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm HIV" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0387_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Âm tính" Value=@("OBS_0387_01") />
+                                                    <RadzenRadioButtonListItem Text="Dương tính" Value=@("OBS_0387_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm viên gam B" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0388_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Âm tính" Value=@("OBS_0388_01") />
+                                                    <RadzenRadioButtonListItem Text="Dương tính" Value=@("OBS_0388_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm giang mai" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0389_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Âm tính" Value=@("OBS_03889_01") />
+                                                    <RadzenRadioButtonListItem Text="Dương tính" Value=@("OBS_0389_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm protein nước tiểu" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0390_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Âm tính" Value=@("OBS_0390_01") />
+                                                    <RadzenRadioButtonListItem Text="Dương tính" Value=@("OBS_0390_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Xét nghiệm viên gam B" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0391_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bình thường" Value=@("OBS_0391_01") />
+                                                    <RadzenRadioButtonListItem Text="Bất thường" Value=@("OBS_0391_02") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Khác (Các xét nghiệm/cận lâm sàng)" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0392_value" Rows="4" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="6. Kết hoạch điều trị">
+                            <RadzenText>6.1. Kế hoạc điều trị</RadzenText>
+
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Hướng điều trị" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0393_value" Rows="5" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tư vấn/giáo dục sức khỏe cho người bệnh và thân nhân " Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0394_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Không " Value=@("OBS_0394_01") />
+                                                    <RadzenRadioButtonListItem Text="Có" Value=@("OBS_0394_02") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenText>6.2. Tiên lượng </RadzenText>
+                            <RadzenRow>
+
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Tiên lượng " Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0395_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Sinh thường" Value=@("OBS_0395_01") />
+                                                    <RadzenRadioButtonListItem Text="Sinh có nguy cơ" Value=@("OBS_0395_02") />
+                                                    <RadzenRadioButtonListItem Text="Chỉ định mổ lấy thai" Value=@("OBS_0395_03") />
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenText>6.3. Lần khám tiếp theo </RadzenText>
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Ngày hẹn tái khám " Variant="@variant">
+
+                                            <RadzenDatePicker @bind-Value="@date_followup" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                                <RadzenColumn SizeLG="5" SizeMD="5" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Phòng khám" Variant="@variant">
+                                            <RadzenDropDownDataGrid @bind-Value="@location_followup" Data=@Listlo TextProperty="Display" ValueProperty="Value" Placeholder="Chọn phòng tái khám" />
+
+                                        </RadzenFormField>
+                                    </RadzenStack>
+
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="1" SizeMD="1" SizeSM="12" Size=" 12">
+                                    <RadzenButton class="rz-mt-2" Click="AddComeback">Lưu</RadzenButton>
+                                </RadzenColumn>
+                            </RadzenRow>
+
+                            @if (List_Comeback != null)
+                            {
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Thời gian</th>
+                                                    <th>Phòng</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in List_Comeback)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <span>@item.date</span>
+                                                        </td>
+                                                        <td>
+                                                            @foreach (var item2 in locations_comeback.Value)
+                                                            {
+                                                                @if (item.location == item2.Value)
+                                                                {
+                                                                    <span> @item2.Display </span>
+                                                                }
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            }
+                            <RadzenRow>
+                                <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Lưu ý" Variant="@variant">
+                                            <RadzenTextArea @bind-Value="@OBS_0396_value" Rows="5" class="form-control" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow class="rz-mt-2">
+                                <RadzenColumn SizeLG="7" SizeMD="7" SizeSM="12" Size=" 12">
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Người khám" Variant="@variant">
+                                            <RadzenRadioButtonList @bind-Value=@OBS_0397_value TValue="string" class="rz-m-2 rz-mt-2">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="Bác sĩ sản phụ khoa" Value=@("OBS_0397_01") />
+                                                    <RadzenRadioButtonListItem Text="Hộ sinh" Value=@("OBS_0397_02") />
+                                                    <RadzenRadioButtonListItem Text="Y sĩ sản nhi" Value=@("OBS_0397_03") />
+                                                    <RadzenRadioButtonListItem Text="Khác" Value=@("OBS_0397_04") />
+
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </RadzenFormField>
+                                    </RadzenStack>
+                                </RadzenColumn>
+
+                                <RadzenColumn SizeLG="5" SizeMD="5" SizeSM="12" Size=" 12">
+
+                                    <RadzenStack>
+                                        <RadzenFormField Text="Bác sĩ" Variant="@variant">
+                                            <RadzenDropDownDataGrid @bind-Value="@doctor_current" Data=@doctors?.Value TextProperty="Display" ValueProperty="Id" Placeholder="Chọn bác sĩ" />
+                                        </RadzenFormField>
+                                    </RadzenStack>
+
+                                </RadzenColumn>
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <RadzenRow>
+            <RadzenColumn SizeLG="12" SizeMD="12" SizeSM="12" Size="12">
+                <RadzenButton Text="Lưu Phiếu" Style="float:inline-end" class=" rz-background-color-info-light rz-mr-3" Click="SaveData" />
+            </RadzenColumn>
+        </RadzenRow>
+    }
+    else
+    {
+        <ListBill encounterinfor="encounterinfor" division="division" subject="subject" />
+
+    }
+
+  
+}
+
+
+
+@code {
+    [Parameter] public int encounterinfor { set; get; }
+    [Parameter] public int division { set; get; }
+    [Parameter] public int? subject { set; get; }
+
+    private bool is_list = false; 
+
+    private Variant variant = Variant.Outlined;
+    int selectedIndex = 0;
+    private ResponseApi<List<DataDoctor>> doctors;
+    private ResponseApi<List<DataLocation>> locations_comeback = new ResponseApi<List<DataLocation>>();
+    private ResponLogin<object> us;
+    private ResponseApi<EncounterInfo> eninfor;
+    private int doctor_current;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Getsession();
+        await GetIP();
+        await LoadDoctor();
+        await LoadEncounter();
+        await FetchLocations();
+        await LoadDiagnosticEn(eninfor.Value.Encounter);
+
+    }
+
+    private async Task Getsession()
+    {
+        us = await sessionStorage.GetItemAsync<ResponLogin<object>>("us");
+    }
+
+    private async Task LoadEncounter()
+    {
+        var val_select = encounterinfor.ToString();
+        eninfor = await ApiService.GetInforEncounter(us.Token, val_select);
+
+    }
+
+    private async Task LoadDoctor()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://14.241.182.251:59325/api/system/employee/eyJ0eXBlIjogIm51cnNlIiwgImxvY2F0aW9uIjogImFsbCJ9");
+        request.Headers.Add("token", us.Token);
+        var response = await _httpClient.SendAsync(request);
+        var result = await response.Content.ReadFromJsonAsync<ResponseApi<List<DataDoctor>>>();
+        doctors = result;
+    }
+
+
+    List<DataLocation> Listlo = new List<DataLocation>();
+    private async Task FetchLocations()
+    {
+
+        var lo = await ApiService.GetLocation(us.Token);
+        locations_comeback = await ApiService.GetLocation(us.Token);
+
+        foreach (var i in lo.Value)
+        {
+            DataLocation y = new DataLocation();
+
+            if (i.Type == "ro")
+            {
+                y = i;
+                Listlo.Add(y);
+
+            }
+        }
+
+    }
+
+    //-------------------------HẸN TÁI KHÁM-------------------------//
+
+    private DateTime? date_followup;
+    private int location_followup;
+    public class Comeback
+    {
+        public int location { set; get; }
+        public string date { set; get; }
+
+    }
+
+    private List<Comeback> List_Comeback = new List<Comeback>();
+    private Comeback itemcomeback = new Comeback();
+
+    private async Task AddComeback()
+    {
+        itemcomeback = new Comeback
+            {
+                location = location_followup,
+                date = date_followup?.ToString("yyyy-MM-dd")
+            };
+        List_Comeback.Add(itemcomeback);
+        itemcomeback = new Comeback();
+        date_followup = new DateTime();
+
+        await FetchLocations();
+      
+    }
+
+
+
+
+    //-------------------------PHIẾU KHÁM THAI-------------------------//
+
+    private ResponseApi<List<DiagnosticEn>> OBS_0338;
+
+    //Biến Tab1
+    private DateTime? OBS_0337_value;
+    private string OBS_0338_value = "";
+    private string OBS_0339_value = "";
+    private string OBS_0001_value = "";
+    private int OBS_0135_value;
+    private int OBS_0399_value;
+    private DateTime? OBS_0340_value;
+    private int OBS_0341_value;
+    private DateTime? OBS_0342_value;
+    private string OBS_0096_value = "";
+    private string OBS_0326_value = "";
+    private int OBS_0343_value;
+
+    //Biến Tab2
+    private string OBS_0344_value = "";
+    private string OBS_0003_value = "";
+    private string OBS_0346_value = "";
+    private string OBS_0347_value = "";
+    private string OBS_0348_value = "";
+    private string OBS_0349_value = "";
+    private string OBS_0350_value = "";
+    private string OBS_0351_value = "";
+    private string OBS_0352_value = "";
+    private string OBS_0353_value = "";
+    private string OBS_0354_value = "";
+    private string OBS_0356_value = "";
+    private string OBS_0357_value = "";
+    private string OBS_0358_value = "";
+    private string OBS_0359_value = "";
+    private string OBS_0360_value = "";
+    private string OBS_0361_value = "";
+    private string OBS_0362_value = "";
+    private string OBS_0363_value = "";
+
+
+    private int OBS_0398_01_value;
+    private int OBS_0398_02_value;
+    private int OBS_0398_03_value;
+    private int OBS_0398_04_value;
+
+
+    private string OBS_0345_01_value = "";
+    private string OBS_0345_02_value = "";
+    private string OBS_0345_03_value = "";
+    private string OBS_0345_04_value = "";
+    private string OBS_0345_05_value = "";
+    private string OBS_0345_06_value = "";
+
+
+
+    private class ObservationItem
+    {
+        public string OBS_0345_01 { get; set; }
+        public string OBS_0345_02 { get; set; }
+        public string OBS_0345_03 { get; set; }
+        public string OBS_0345_04 { get; set; }
+        public string OBS_0345_05 { get; set; }
+        public string OBS_0345_06 { get; set; }
+    }
+
+
+    private List<ObservationItem> List_OBS_0345 = new List<ObservationItem>();
+    private ObservationItem newItem = new ObservationItem();
+
+
+    private async Task AddItem()
+    {
+        List_OBS_0345.Add(newItem);
+        newItem = new ObservationItem();
+
+        await InvokeAsync(StateHasChanged);
+
+    }
+
+    private void RemoveItem(ObservationItem item)
+    {
+        List_OBS_0345.Remove(item);
+    }
+
+    private async Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await AddItem();
+        }
+    }
+
+
+    //Biến Tab3
+    private string OBS_0364_value = "";
+    private string OBS_0365_value = "";
+    private string OBS_0366_value = "";
+    private string OBS_0367_value = "";
+    private string OBS_0368_value = "";
+    private string OBS_0369_value = "";
+
+    //Trong form k có
+    private string OBS_0004_value = "";
+    private string OBS_0005_value = "";
+    private string OBS_0400_value = "";
+
+
+    //Biến tab 4
+    private string OBS_0370_value = "";
+    private string OBS_0371_value = "";
+    private string OBS_0372_value = "";
+    private string OBS_0373_value = "";
+    private string OBS_0374_value = "";
+    private string OBS_0375_value = "";
+    private string OBS_0376_value = "";
+    private string OBS_0377_value = "";
+    private string OBS_0378_value = "";
+    private string OBS_0380_value = "";
+    private string OBS_0381_value = "";
+    private string OBS_0382_value = "";
+    private string OBS_0383_value = "";
+
+    //Biến tab 5
+    private string OBS_0384_value = "";
+    private string OBS_0385_value = "";
+    private string OBS_0386_value = "";
+    private string OBS_0387_value = "";
+    private string OBS_0388_value = "";
+    private string OBS_0389_value = "";
+    private string OBS_0390_value = "";
+    private string OBS_0391_value = "";
+    private string OBS_0392_value = "";
+
+    //Biến tab 6
+    private string OBS_0393_value = "";
+    private string OBS_0394_value = "";
+    private string OBS_0395_value = "";
+    private string OBS_0396_value = "";
+    private string OBS_0397_value = "";
+
+
+
+
+
+    private class DiagnosticEn
+    {
+        public long ID { set; get; }
+        public string Code { set; get; }
+        public string Name { set; get; }
+        public string Type { set; get; }
+        public string Display { set; get; }
+        public bool Transfer { set; get; }
+        public string Type_code { set; get; }
+        public string Description { set; get; }
+        public int Group_priority { set; get; }
+    }
+
+    private async Task LoadDiagnosticEn(int encounter)
+    {
+        if (encounter != null)
+        {
+            if (encounter != null)
+            {
+                var para = new
+                {
+                    type = "all",
+                    encounter = encounter,
+
+                };
+                var jsonContent = JsonConvert.SerializeObject(para);
+                byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonContent);
+                string base64EncodedString = Convert.ToBase64String(jsonBytes);
+
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"http://14.241.182.251:59325/api/diagnostic/{base64EncodedString}");
+                request.Headers.Add("token", us.Token);
+                var response = await _httpClient.SendAsync(request);
+                var result = await response.Content.ReadFromJsonAsync<ResponseApi<List<DiagnosticEn>>>();
+                OBS_0338 = result;
+            }
+        }
+    }
+
+
+    private string ip;
+    private async Task GetIP()
+    {
+        ip = GetLocalIPAddress();
+    }
+    static string GetLocalIPAddress()
+    {
+        IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+        foreach (IPAddress ipAddress in localIPs)
+        {
+            if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            {
+                return ipAddress.ToString();
+            }
+        }
+        return "Không tìm thấy địa chỉ IP IPv4.";
+    }
+
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    private async Task SaveData()
+    {
+        try
+        {
+
+            //Phiếu khám thai
+            object[] OBS_0398_value = new object[]
+            {
+                new { OBS_0398_01 = OBS_0398_01_value },
+                new { OBS_0398_02 = OBS_0398_02_value },
+                new { OBS_0398_03 = OBS_0398_03_value },
+                new { OBS_0398_04 = OBS_0398_04_value },
+            };
+
+            var request1 = new
+            {
+                data = new
+                {
+                    type = "OET_026",
+                    encounter = eninfor.Value.Encounter,
+                    subject = eninfor.Value.Subject,
+                    division = division,
+                    doctor = doctor_current,
+                    items = new object[] {
+                    new { code = "OBS_0337", value = new [] { OBS_0337_value?.ToString("yyyy-MM-dd") } },
+                    new { code = "OBS_0338", value = new [] { OBS_0338_value } },
+                    new { code = "OBS_0339", value = new [] { OBS_0339_value } },
+                    new { code = "OBS_0001", value = new [] { OBS_0001_value } },
+                    new { code = "OBS_0135", value = new [] { OBS_0135_value } },
+                    new { code = "OBS_0339", value = new [] { OBS_0339_value } },
+                    new { code = "OBS_0340", value = new [] { OBS_0340_value?.ToString("yyyy-MM-dd") } },
+                    new { code = "OBS_0341", value = new [] { OBS_0341_value } },
+                    new { code = "OBS_0342", value = new [] { OBS_0342_value?.ToString("yyyy-MM-dd") } },
+                    new { code = "OBS_0096", value = new [] { OBS_0096_value } },
+                    new { code = "OBS_0326", value = new [] { OBS_0326_value } },
+                    new { code = "OBS_0343", value = new [] { OBS_0343_value } },
+                    new { code = "OBS_0003", value = new [] { OBS_0003_value } },
+                    new { code = "OBS_0346", value = new [] { OBS_0346_value } },
+                    new { code = "OBS_0347", value = new [] { OBS_0347_value } },
+                    new { code = "OBS_0348", value = new [] { OBS_0348_value } },
+                    new { code = "OBS_0349", value = new [] { OBS_0349_value } },
+                    new { code = "OBS_0350", value = new [] { OBS_0350_value } },
+                    new { code = "OBS_0351", value = new [] { OBS_0351_value } },
+                    new { code = "OBS_0352", value = new [] { OBS_0352_value } },
+                    new { code = "OBS_0358", value = new [] { OBS_0358_value } },
+                    new { code = "OBS_0359", value = new [] { OBS_0359_value } },
+                    new { code = "OBS_0360", value = new [] { OBS_0360_value } },
+                    new { code = "OBS_0361", value = new [] { OBS_0361_value } },
+                    new { code = "OBS_0362", value = new [] { OBS_0362_value } },
+                    new { code = "OBS_0363", value = new [] { OBS_0363_value } },
+                    new { code = "OBS_0004", value = new [] { OBS_0004_value } },
+                    new { code = "OBS_0364", value = new [] { OBS_0364_value } },
+                    new { code = "OBS_0365", value = new [] { OBS_0365_value } },
+                    new { code = "OBS_0366", value = new [] { OBS_0366_value } },
+                    new { code = "OBS_0367", value = new [] { OBS_0367_value } },
+                    new { code = "OBS_0368", value = new [] { OBS_0368_value } },
+                    new { code = "OBS_0369", value = new [] { OBS_0369_value } },
+                    new { code = "OBS_0370", value = new [] { OBS_0370_value } },
+                    new { code = "OBS_0371", value = new [] { OBS_0371_value } },
+                    new { code = "OBS_0372", value = new [] { OBS_0372_value } },
+                    new { code = "OBS_0373", value = new [] { OBS_0373_value } },
+                    new { code = "OBS_0374", value = new [] { OBS_0374_value } },
+                    new { code = "OBS_0375", value = new [] { OBS_0375_value } },
+                    new { code = "OBS_0376", value = new [] { OBS_0376_value } },
+                    new { code = "OBS_0382", value = new [] { OBS_0382_value } },
+                    new { code = "OBS_0383", value = new [] { OBS_0383_value } },
+                    new { code = "OBS_0392", value = new [] { OBS_0392_value } },
+                    new { code = "OBS_0393", value = new [] { OBS_0393_value } },
+                    new { code = "OBS_0395", value = new [] { OBS_0395_value } },
+                    new { code = "OBS_0396", value = new [] { OBS_0396_value } },
+                    new { code = "OBS_0397", value = new [] { OBS_0397_value } },
+                    new { code = "OBS_0005", value = new [] { OBS_0005_value } },
+                    new { code = "OBS_0344", value = new [] { OBS_0344_value } },
+                    new { code = "OBS_0400", value = new [] { OBS_0400_value } },
+                    new { code = "OBS_0345", value = List_OBS_0345 },
+                    new { code = "OBS_0353", value = new [] { OBS_0353_value } },
+                    new { code = "OBS_0354", value = new [] { OBS_0354_value } },
+                    new { code = "OBS_0398", value = OBS_0398_value},
+                    new { code = "OBS_0356", value = new [] { OBS_0356_value } },
+                    new { code = "OBS_0357", value = new [] { OBS_0357_value } },
+                    new { code = "OBS_0372", value = new [] { OBS_0372_value } },
+                    new { code = "OBS_0377", value = new [] { OBS_0377_value } },
+                    new { code = "OBS_0378", value = new [] { OBS_0378_value } },
+                    new { code = "OBS_0380", value = new [] { OBS_0380_value } },
+                    new { code = "OBS_0381", value = new [] { OBS_0381_value } },
+                    new { code = "OBS_0384", value = new [] { OBS_0384_value } },
+                    new { code = "OBS_0385", value = new [] { OBS_0385_value } },
+                    new { code = "OBS_0386", value = new [] { OBS_0386_value } },
+                    new { code = "OBS_0387", value = new [] { OBS_0387_value } },
+                    new { code = "OBS_0388", value = new [] { OBS_0388_value } },
+                    new { code = "OBS_0389", value = new [] { OBS_0389_value } },
+                    new { code = "OBS_0390", value = new [] { OBS_0390_value } },
+                    new { code = "OBS_0391", value = new [] { OBS_0391_value } },
+                    new { code = "OBS_0394", value = new [] { OBS_0394_value } },
+                    new { code = "OBS_0399", value = new [] { OBS_0399_value } },
+
+
+    }
+                },
+                token = us.Token,
+                ip = ip,
+                code = new Guid().ToString()
+            };
+            var jsonContent1 = JsonConvert.SerializeObject(request1);
+            var content1 = new StringContent(jsonContent1, System.Text.Encoding.UTF8, "application/json");
+            var response1 = await _httpClient.PostAsync("http://14.241.182.251:59325/api/medical/visit", content1);
+            response1.EnsureSuccessStatusCode();
+            responseSaveData result1 = await response1.Content.ReadFromJsonAsync<responseSaveData>();
+
+
+            if(List_Comeback != null){
+                //Hẹm tái khám
+                var request2 = new
+                {
+                    data = new
+                    {
+                        encounter = eninfor.Value.Encounter,
+                        items = List_Comeback,
+                        division = division,
+                        doctor = doctor_current,
+                    },
+                    token = us.Token,
+                    ip = ip,
+                    code = new Guid().ToString()
+                };
+                var jsonContent2 = JsonConvert.SerializeObject(request2);
+                var content2 = new StringContent(jsonContent2, System.Text.Encoding.UTF8, "application/json");
+                var response2 = await _httpClient.PutAsync("http://14.241.182.251:59325/api/medical/comeback", content2);
+                response2.EnsureSuccessStatusCode();
+                responseSaveComeBack result2 = await response2.Content.ReadFromJsonAsync<responseSaveComeBack>();
+            }
+           
+            if (result1.code == "200" )
+            {
+
+                NotificationService.Notify(NotificationSeverity.Success, result1.message);
+                //NavigationManager.NavigateTo($"/listbill/{encounterinfor}");
+
+                is_list = true;
+
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Thất bại");
+            }
+
+
+        }
+        catch (HttpRequestException e)
+        {
+
+            Console.WriteLine($"Lỗi kết nối API: {e.Message}");
+            throw;
+        }
+    }
+
+
+}

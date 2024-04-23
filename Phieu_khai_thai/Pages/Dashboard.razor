@@ -1,0 +1,624 @@
+﻿@page "/dashboard"
+
+@using Data
+@using Services
+@inject IApiService ApiService
+@inject NavigationManager navigationmanager
+@inject NotificationService notification
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@using Newtonsoft.Json;
+@using System.Text;
+@inject HttpClient _httpClient;
+@using System.Net
+@inject NotificationService NotificationService
+
+@* <RadzenText TextStyle="TextStyle.H4">Phiếu Khám Thai</RadzenText>
+<hr /> *@
+
+<RadzenRow>
+    
+    <RadzenColumn SizeLG="3" SizeMD="3" SizeSM="4" Size=" 12">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-p-4 rz-mb-6 rz-border-radius-1" Style="border: var(--rz-grid-cell-border);">
+            <RadzenLabel Text="Chọn khoa" Component="DropDownDataGridBindValue" Style="font-weight:bold" />
+                <RadzenDropDownDataGrid @bind-Value=@value_location Data=locations?.Value Name="DropDownDataGridBindValue" TextProperty="Display" ValueProperty="Value" Change="@(() => LocationValueChanged(value_location))" />
+            </RadzenStack>
+           
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Gap="0.5rem" Class="rz-p-4 rz-mb-6 rz-border-radius-1" Style="border: var(--rz-grid-cell-border);">
+                <RadzenText Style="font-size:18px;font-weight:bold">Danh sách bệnh nhân</RadzenText>
+                <RadzenListBox FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.StartsWith" AllowFiltering="true"
+                           Data=@(eninlocations?.Value ?? eninlocations_default.Value) TextProperty="Name" ValueProperty="Encounter" AllowClear="true" @bind-Value=value_encounter
+                               Style="width: 100%; max-width: 320px; height: 400px" Change="@(() => EncounterValueChanged(value_encounter))" />
+            </RadzenStack>
+    
+    </RadzenColumn>
+
+    <RadzenColumn SizeLG="9" SizeMD="9" SizeSM="8" Size=" 12">  
+         <RadzenRow Gap="1rem">
+            <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                <RadzenStack>
+                    @if (eninfor != null)
+                    {
+                        <RadzenFormField Text="Số HSBA" Variant="@variant">
+                            <RadzenNumeric @bind-Value="@eninfor.Value.Encounter" Disabled/>
+                        </RadzenFormField>
+                        <RadzenFormField Text="Họ tên" Variant="@variant">
+                            <RadzenTextBox @bind-Value="@eninfor.Value.Name" Disabled />
+                        </RadzenFormField>
+                        @if (eninfor.Value.Start > eninfor.Value.Date_Start)
+                        {
+                            string start = eninfor.Value.Start.ToString();
+                            <RadzenFormField Text="Ngày vào" Variant="@variant">
+                                <RadzenTextBox @bind-Value="@start" Disabled />
+                            </RadzenFormField>
+                        }   
+                    }
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                <RadzenStack>
+                    @if (eninfor != null)
+                    {
+                        <RadzenFormField Text="Ngày sinh" Variant="@variant">
+                            <RadzenTextBox @bind-Value="@eninfor.Value.Birthdate" Disabled />
+                        </RadzenFormField>
+                        <RadzenFormField Text="Giới tính" Variant="@variant">
+                            <RadzenNumeric @bind-Value="@eninfor.Value.Gender_Name" Disabled />
+                        </RadzenFormField>
+                        <RadzenFormField Text="Địa chỉ" Variant="@variant">
+                            <RadzenTextBox @bind-Value="@eninfor.Value.Address" Disabled />
+                        </RadzenFormField>    
+                    }
+                </RadzenStack>
+            </RadzenColumn>
+
+            <RadzenColumn SizeLG="4" SizeMD="4" SizeSM="12" Size=" 12">
+                <RadzenStack>
+                    @if (eninfor != null)
+                    {
+                        @if (eninfor.Value.Organization.Display != null)
+                        {
+                            <RadzenFormField Text="Khoa" Variant="@variant">
+                                <RadzenTextBox @bind-Value="@eninfor.Value.Organization.Display" Disabled />
+                            </RadzenFormField>
+
+                            @if (eninfor.Value.Location != null)
+                            {
+                                var value_loencounter1 = eninfor.Value.Location?.FirstOrDefault();
+                                if (value_loencounter1!= null)
+                                {
+                                    value_loencounter = value_loencounter1.Display.ToString();
+                                    <RadzenFormField Text="Khoa" Variant="@variant">
+                                        <RadzenTextBox @bind-Value="@value_loencounter" Disabled />
+                                    </RadzenFormField>
+                                }
+                            }
+                     
+                        }       
+                    }
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+         
+   
+
+        @if (eninfor != null)
+        {
+            <hr />
+
+            @if (addbi == true)
+            {
+                <AddBill encounterinfor="eninfor.Value.Encounter" division="division" subject="eninfor.Value.Subject" />
+
+            }
+            else if (listbi == true)
+            {
+                <ListBill encounterinfor="eninfor.Value.Encounter" division="division" subject="eninfor.Value.Subject" />
+
+            }
+            else
+            {
+                <RadzenButton Click="TurnOn_Addbill" Size="ButtonSize.Small" class="rz-background-color-primary rz-mt-2">Tạo phiếu khám thai</RadzenButton>
+                <RadzenButton Click="TurnOn_Listbill" Size="ButtonSize.Small" class="rz-background-color-success rz-mt-2">Danh sách phiếu khám thai</RadzenButton>
+
+            }
+        }
+
+
+    </RadzenColumn>
+</RadzenRow>
+
+
+
+@code {
+
+    private Variant variant = Variant.Outlined;
+    int selectedIndex = 0;
+
+    private ResponseApi<List<DataLocation>> locations;
+    private ResponseApi<List<DataLocation>> locations_comeback;
+
+    private ResponseApi<List<DataDoctor>> doctors;
+    private ResponseApi<List<Eninlocation>> eninlocations;
+    private ResponseApi<List<Eninlocation>> eninlocations_default = new  ResponseApi<List<Eninlocation>>();
+    private ResponseApi<EncounterInfo> eninfor;
+    private string value_loencounter;
+    private DateTime from;
+    private DateTime to;
+    private string fromdate;
+    private string todate;
+    private ResponLogin<object> us;
+    private int value_location;
+    private int value_encounter;
+    private int doctor_current;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Getsession();
+        await FetchLocations();
+        //await GetIP();
+        //await LoadDoctor();
+    }
+
+    private async Task Getsession()
+    {
+        us = await sessionStorage.GetItemAsync<ResponLogin<object>>("us");
+    }
+
+
+    private async Task FetchLocations()
+    {
+
+        locations = await ApiService.GetLocation(us.Token);
+
+        // locations_comeback = await ApiService.GetLocation(us.Token);
+
+    }
+
+
+    public int division;
+    private async Task LocationValueChanged(int newValue)
+    {
+        //Value Location
+        var val_select = Convert.ToString(newValue);
+
+        ///Khoa hiện tại
+        division = newValue;
+
+        //Day
+        from = DateTime.Today;
+        to = from.AddDays(1);
+        fromdate = from.ToString("yyyy-MM-d HH:mm:ss");
+        todate = to.ToString("yyyy-MM-d HH:mm:ss");
+        //Call API
+        eninlocations = await ApiService.GetEninlocations(us.Token, val_select,fromdate,todate);
+    }
+
+    private async Task EncounterValueChanged(int newValue)
+    {
+
+        //Value Encouter
+        var val_select = Convert.ToString(newValue);
+        eninfor = await ApiService.GetInforEncounter(us.Token, val_select);
+
+        //Load dữ chẩn đoán trong phiếu khám thai
+        //await LoadDiagnosticEn(eninfor.Value.Encounter);
+
+        addbi = false;
+        listbi = false; 
+    }
+
+
+
+    // private async Task LoadDoctor()
+    // {
+    //     var request = new HttpRequestMessage(HttpMethod.Get, "http://14.241.182.251:59325/api/system/employee/eyJ0eXBlIjogIm51cnNlIiwgImxvY2F0aW9uIjogImFsbCJ9");
+    //     request.Headers.Add("token", us.Token);
+    //     var response = await _httpClient.SendAsync(request);
+    //     var result = await response.Content.ReadFromJsonAsync<ResponseApi<List<DataDoctor>>>();
+    //     doctors = result;
+    // }
+
+
+    private bool addbi = false;
+    private void TurnOn_Addbill()
+    {
+        addbi = true;
+    }
+    
+    private bool listbi = false;
+    private void TurnOn_Listbill()
+    {
+        listbi = true;
+    }
+
+    //-------------------------HẸN TÁI KHÁM-----------------------------//
+
+    // private DateTime? date_followup;
+    // private int location_followup;
+    // public class Comeback
+    // {
+    //     public int location {set;get;}
+    //     public string date { set; get; }
+
+    // }
+
+    // private List<Comeback> List_Comeback = new List<Comeback>();
+    // private Comeback itemcomeback = new Comeback();
+
+    // private async Task AddComeback()
+    // {
+    //     itemcomeback = new Comeback
+    //         {
+    //             location = location_followup,
+    //             date = date_followup?.ToString("yyyy-MM-dd")
+             
+    //         };
+    //     List_Comeback.Add(itemcomeback);
+    //     itemcomeback = new Comeback();
+    //     date_followup = new DateTime();
+    // }
+
+    // //-------------------------PHIẾU KHÁM THAI-------------------------//
+    // private ResponseApi<List<DiagnosticEn>> OBS_0338;
+
+    // //Biến Tab1
+    // private DateTime? OBS_0337_value;
+    // private string OBS_0338_value;
+    // private string OBS_0339_value = "";
+    // private string OBS_0001_value = "";
+    // private int OBS_0135_value;
+    // private int OBS_0399_value;
+    // private DateTime? OBS_0340_value;
+    // private int OBS_0341_value;
+    // private DateTime? OBS_0342_value;
+    // private string OBS_0096_value ="";
+    // private string OBS_0326_value ="";
+    // private int OBS_0343_value;
+
+    // //Biến Tab2
+    // private string OBS_0344_value ="";
+    // private string OBS_0003_value ="";
+    // private string OBS_0346_value ="";
+    // private string OBS_0347_value ="";
+    // private string OBS_0348_value ="";
+    // private string OBS_0349_value ="";
+    // private string OBS_0350_value ="";
+    // private string OBS_0351_value ="";
+    // private string OBS_0352_value ="";
+    // private string OBS_0353_value ="";
+    // private string OBS_0354_value ="";
+    // private string OBS_0356_value ="";
+    // private string OBS_0357_value ="";
+    // private string OBS_0358_value ="";
+    // private string OBS_0359_value ="";
+    // private string OBS_0360_value ="";
+    // private string OBS_0361_value ="";
+    // private string OBS_0362_value ="";
+    // private string OBS_0363_value = "";
+
+
+    // private int OBS_0398_01_value;
+    // private int OBS_0398_02_value;
+    // private int OBS_0398_03_value;
+    // private int OBS_0398_04_value;
+
+
+    // private string OBS_0345_01_value = "";
+    // private string OBS_0345_02_value = "";
+    // private string OBS_0345_03_value = "";
+    // private string OBS_0345_04_value = "";
+    // private string OBS_0345_05_value = "";
+    // private string OBS_0345_06_value = "";
+
+
+
+    // private class ObservationItem
+    // {
+    //     public string OBS_0345_01 { get; set; }
+    //     public string OBS_0345_02 { get; set; }
+    //     public string OBS_0345_03 { get; set; }
+    //     public string OBS_0345_04 { get; set; }
+    //     public string OBS_0345_05 { get; set; }
+    //     public string OBS_0345_06 { get; set; }
+    // }
+
+
+    // private List<ObservationItem> ObservationItems = new List<ObservationItem>();
+    // private ObservationItem newItem = new ObservationItem();
+
+    // private async Task AddItem()
+    // {
+    //     ObservationItems.Add(newItem);
+    //     newItem = new ObservationItem();
+            
+    //     await InvokeAsync(StateHasChanged);
+
+    // }
+
+    // private void RemoveItem(ObservationItem item)
+    // {
+    //     ObservationItems.Remove(item);
+    // }
+
+    // private async Task OnKeyPress(KeyboardEventArgs e)
+    // {
+    //     if (e.Key == "Enter")
+    //     {
+    //        await AddItem();
+    //     }
+    // }
+
+
+    // //Biến Tab3
+    // private string OBS_0364_value ="";
+    // private string OBS_0365_value ="";
+    // private string OBS_0366_value ="";
+    // private string OBS_0367_value ="";
+    // private string OBS_0368_value ="";
+    // private string OBS_0369_value ="";
+
+    // //Trong form k có
+    // private string OBS_0004_value = "";
+    // private string OBS_0005_value = "";
+    // private string OBS_0400_value = "";
+
+
+    // //Biến tab 4
+    // private string OBS_0370_value ="";
+    // private string OBS_0371_value ="";
+    // private string OBS_0372_value ="";
+    // private string OBS_0373_value ="";
+    // private string OBS_0374_value ="";
+    // private string OBS_0375_value ="";
+    // private string OBS_0376_value ="";
+    // private string OBS_0377_value ="";
+    // private string OBS_0378_value ="";
+    // private string OBS_0380_value =""; 
+    // private string OBS_0381_value ="";    
+    // private string OBS_0382_value ="";
+    // private string OBS_0383_value ="";
+
+    // //Biến tab 5
+    // private string OBS_0384_value ="";
+    // private string OBS_0385_value ="";
+    // private string OBS_0386_value ="";
+    // private string OBS_0387_value ="";
+    // private string OBS_0388_value ="";
+    // private string OBS_0389_value ="";
+    // private string OBS_0390_value ="";
+    // private string OBS_0391_value ="";
+    // private string OBS_0392_value ="";
+
+    // //Biến tab 6
+    // private string OBS_0393_value ="";
+    // private string OBS_0394_value ="";
+    // private string OBS_0395_value ="";    
+    // private string OBS_0396_value ="";
+    // private string OBS_0397_value = "";
+
+
+
+
+
+    // private class DiagnosticEn
+    // {
+    //     public long ID { set; get; }
+    //     public string Code { set; get; }
+    //     public string Name { set; get; }
+    //     public string Type { set; get; }
+    //     public string Display { set; get; }
+    //     public bool Transfer { set; get; }
+    //     public string Type_code { set; get; }
+    //     public string Description { set; get; }
+    //     public int Group_priority {set; get;}
+    // }
+
+    // private async Task LoadDiagnosticEn(int encounter)
+    // {
+    //     if (encounter != null)
+    //     {
+    //         if (encounter != null)
+    //         {
+    //             var para = new
+    //             {
+    //                 type = "all",
+    //                 encounter = encounter,
+
+    //             };
+    //             var jsonContent = JsonConvert.SerializeObject(para);
+    //             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonContent);
+    //             string base64EncodedString = Convert.ToBase64String(jsonBytes);
+
+
+    //             var request = new HttpRequestMessage(HttpMethod.Get, $"http://14.241.182.251:59325/api/diagnostic/{base64EncodedString}");
+    //             request.Headers.Add("token", us.Token);
+    //             var response = await _httpClient.SendAsync(request);
+    //             var result = await response.Content.ReadFromJsonAsync<ResponseApi<List<DiagnosticEn>>>();
+    //             OBS_0338 = result;
+    //         }
+    //     }
+    // }
+
+
+    // private string ip;
+    // private async Task GetIP()
+    // {
+    //     ip = GetLocalIPAddress();
+    // }
+    // static string GetLocalIPAddress()
+    // {
+    //     IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+    //     foreach (IPAddress ipAddress in localIPs)
+    //     {
+    //         if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+    //         {
+    //             return ipAddress.ToString();
+    //         }
+    //     }
+    //     return "Không tìm thấy địa chỉ IP IPv4.";
+    // }
+
+
+    // private async Task SaveData()
+    // {
+    //     try{
+
+    //         //Phiếu khám thai
+    //         object[] OBS_0398_value = new object[]
+    //         {
+    //             new { OBS_0398_01 = OBS_0398_01_value },
+    //             new { OBS_0398_02 = OBS_0398_02_value },
+    //             new { OBS_0398_03 = OBS_0398_03_value },
+    //             new { OBS_0398_04 = OBS_0398_04_value },
+    //         };
+
+    //         var request1 = new
+    //         {
+    //             data = new
+    //             {
+    //                 type = "OET_026",
+    //                 encounter = eninfor.Value.Encounter,
+    //                 subject = eninfor.Value.Subject,
+    //                 division = division,
+    //                 doctor = doctor_current,
+    //                 items = new object[] {
+    //                 new { code = "OBS_0337", value = new [] { OBS_0337_value?.ToString("yyyy-MM-dd") } },
+    //                 new { code = "OBS_0338", value = new [] { OBS_0338_value } },
+    //                 new { code = "OBS_0339", value = new [] { OBS_0339_value } },
+    //                 new { code = "OBS_0001", value = new [] { OBS_0001_value } },
+    //                 new { code = "OBS_0135", value = new [] { OBS_0135_value } },
+    //                 new { code = "OBS_0339", value = new [] { OBS_0339_value } },
+    //                 new { code = "OBS_0340", value = new [] { OBS_0340_value?.ToString("yyyy-MM-dd") } },
+    //                 new { code = "OBS_0341", value = new [] { OBS_0341_value } },
+    //                 new { code = "OBS_0342", value = new [] { OBS_0342_value?.ToString("yyyy-MM-dd") } },
+    //                 new { code = "OBS_0096", value = new [] { OBS_0096_value } },
+    //                 new { code = "OBS_0343", value = new [] { OBS_0343_value } },
+    //                 new { code = "OBS_0003", value = new [] { OBS_0003_value } },
+    //                 new { code = "OBS_0346", value = new [] { OBS_0346_value } },
+    //                 new { code = "OBS_0347", value = new [] { OBS_0347_value } },
+    //                 new { code = "OBS_0348", value = new [] { OBS_0348_value } },
+    //                 new { code = "OBS_0349", value = new [] { OBS_0349_value } },
+    //                 new { code = "OBS_0350", value = new [] { OBS_0350_value } },
+    //                 new { code = "OBS_0351", value = new [] { OBS_0351_value } },
+    //                 new { code = "OBS_0352", value = new [] { OBS_0352_value } },
+    //                 new { code = "OBS_0358", value = new [] { OBS_0358_value } },
+    //                 new { code = "OBS_0359", value = new [] { OBS_0359_value } },
+    //                 new { code = "OBS_0360", value = new [] { OBS_0360_value } },
+    //                 new { code = "OBS_0361", value = new [] { OBS_0361_value } },
+    //                 new { code = "OBS_0362", value = new [] { OBS_0362_value } },
+    //                 new { code = "OBS_0363", value = new [] { OBS_0363_value } },
+    //                 new { code = "OBS_0004", value = new [] { OBS_0004_value } },
+    //                 new { code = "OBS_0364", value = new [] { OBS_0364_value } },
+    //                 new { code = "OBS_0365", value = new [] { OBS_0365_value } },
+    //                 new { code = "OBS_0366", value = new [] { OBS_0366_value } },
+    //                 new { code = "OBS_0367", value = new [] { OBS_0367_value } },
+    //                 new { code = "OBS_0368", value = new [] { OBS_0368_value } },
+    //                 new { code = "OBS_0369", value = new [] { OBS_0369_value } },
+    //                 new { code = "OBS_0370", value = new [] { OBS_0370_value } },
+    //                 new { code = "OBS_0371", value = new [] { OBS_0371_value } },
+    //                 new { code = "OBS_0372", value = new [] { OBS_0372_value } },
+    //                 new { code = "OBS_0373", value = new [] { OBS_0373_value } },
+    //                 new { code = "OBS_0374", value = new [] { OBS_0374_value } },
+    //                 new { code = "OBS_0375", value = new [] { OBS_0375_value } },
+    //                 new { code = "OBS_0376", value = new [] { OBS_0376_value } },
+    //                 new { code = "OBS_0382", value = new [] { OBS_0382_value } },
+    //                 new { code = "OBS_0383", value = new [] { OBS_0383_value } },
+    //                 new { code = "OBS_0392", value = new [] { OBS_0392_value } },
+    //                 new { code = "OBS_0393", value = new [] { OBS_0393_value } },
+    //                 new { code = "OBS_0395", value = new [] { OBS_0395_value } },
+    //                 new { code = "OBS_0396", value = new [] { OBS_0396_value } },
+    //                 new { code = "OBS_0397", value = new [] { OBS_0397_value } },
+    //                 new { code = "OBS_0005", value = new [] { OBS_0005_value } },
+    //                 new { code = "OBS_0344", value = new [] { OBS_0344_value } },
+    //                 new { code = "OBS_0400", value = new [] { OBS_0400_value } },
+    //                 // new { code = "OBS_0345", value = List_OBS_0345 },
+    //                 new { code = "OBS_0353", value = new [] { OBS_0353_value } },
+    //                 new { code = "OBS_0354", value = new [] { OBS_0354_value } },
+    //                 new { code = "OBS_0398", value = OBS_0398_value},
+    //                 new { code = "OBS_0356", value = new [] { OBS_0356_value } },
+    //                 new { code = "OBS_0357", value = new [] { OBS_0357_value } },
+    //                 new { code = "OBS_0372", value = new [] { OBS_0372_value } },
+    //                 new { code = "OBS_0377", value = new [] { OBS_0377_value } },
+    //                 new { code = "OBS_0378", value = new [] { OBS_0378_value } },
+    //                 new { code = "OBS_0380", value = new [] { OBS_0380_value } },
+    //                 new { code = "OBS_0381", value = new [] { OBS_0381_value } },
+    //                 new { code = "OBS_0384", value = new [] { OBS_0384_value } },
+    //                 new { code = "OBS_0385", value = new [] { OBS_0385_value } },
+    //                 new { code = "OBS_0386", value = new [] { OBS_0386_value } },
+    //                 new { code = "OBS_0387", value = new [] { OBS_0387_value } },
+    //                 new { code = "OBS_0388", value = new [] { OBS_0388_value } },
+    //                 new { code = "OBS_0389", value = new [] { OBS_0389_value } },
+    //                 new { code = "OBS_0390", value = new [] { OBS_0390_value } },
+    //                 new { code = "OBS_0391", value = new [] { OBS_0391_value } },
+    //                 new { code = "OBS_0394", value = new [] { OBS_0394_value } },
+    //         }
+    //             },
+    //             token = us.Token,
+    //             ip = ip,
+    //             code = us.Code
+    //         };
+    //         var jsonContent1 = JsonConvert.SerializeObject(request1);
+    //         var content1 = new StringContent(jsonContent1, System.Text.Encoding.UTF8, "application/json");             
+    //         var response1 = await _httpClient.PostAsync("http://14.241.182.251:59325/api/medical/visit", content1);
+    //         response1.EnsureSuccessStatusCode();
+    //         responseSaveData result1 = await response1.Content.ReadFromJsonAsync<responseSaveData>();
+
+    //         //Hẹm tái khám
+    //         var request2 = new
+    //         {
+    //             data = new
+    //             {
+    //                 encounter = eninfor.Value.Encounter,
+    //                 items = List_Comeback,
+    //                 division = division,
+    //                 doctor = doctor_current,
+    //             },
+    //             token = us.Token,
+    //             ip = ip,
+    //             code = us.Code
+    //         };
+    //         var jsonContent2 = JsonConvert.SerializeObject(request2);
+    //         var content2 = new StringContent(jsonContent2, System.Text.Encoding.UTF8, "application/json");
+    //         var response2 = await _httpClient.PutAsync("http://14.241.182.251:59325/api/medical/comeback", content2);
+    //         response2.EnsureSuccessStatusCode();
+    //         responseSaveComeBack result2 = await response2.Content.ReadFromJsonAsync<responseSaveComeBack>();
+    //         if(result1.code == "200" && result2.code == "200")
+    //         {
+    //             NotificationService.Notify(NotificationSeverity.Success, result2.message);
+    //         }
+    //         else
+    //         {
+    //             NotificationService.Notify(NotificationSeverity.Error, "Thất bại");
+    //         }
+
+
+    //     }catch(HttpRequestException e){
+
+    //         Console.WriteLine($"Lỗi kết nối API: {e.Message}");
+    //         throw;
+    //     }
+    // }
+
+    // public class responseSaveData
+    // {
+    //     public string code {set;get;}
+    //     public string type { set; get; }
+    //     public string hints { set; get; }
+    //     public string owner { set; get; }
+    //     public string value { set; get; }
+    //     public string status { set; get; }
+    //     public string message { set; get; }
+    // }
+    //  public class responseSaveComeBack
+    // {
+    //     public string code {set;get;}
+    //     public string type { set; get; }
+    //     public string hints { set; get; }
+    //     public string status { set; get; }
+    //     public string message { set; get; }
+    // }
+
+}
